@@ -15,8 +15,10 @@ class App:
         self.state = 'start'
         self.cell_width = 20
         self.cell_height = 20
-        self.player = Player(self, Vector2(1, 1))
+        self.player = Player(self, Vector2(13, 29))
+        self.cells = []
         self.walls = []
+        self.coins = []
         self.load()
         
     def run(self):
@@ -46,8 +48,14 @@ class App:
         with open("walls.txt") as file:
             lines = file.readlines()
             for line in lines:
-                self.walls.append(line[:-1])
+                self.cells.append(line[:-1])
 
+        for row in range(31):
+            for col in range(28):
+                if self.cells[row][col] == '1':
+                    self.walls.append(Vector2(col, row))
+                elif self.cells[row][col] == 'C':
+                    self.coins.append(Vector2(col, row))
 
     def draw_grid(self):
         for x in range(SCREEN_WIDTH // self.cell_width):
@@ -55,14 +63,13 @@ class App:
         
         for y in range(SCREEN_HEIGHT // self.cell_height):
             pygame.draw.line(self.background, GRAY_LIGHT, (0, y * self.cell_height), (MAZE_WIDTH, y * self.cell_height), 1)
-
-        for row in range(len(self.walls)):
-            for col in range(row):
-                try:
-                    if self.walls[row][col] == '1':
-                        pygame.draw.rect(self.background, GREEN, (row * self.cell_width, col * self.cell_height, self.cell_width, self.cell_height), 0)
-                except:
-                    print(self.walls[row])
+        
+        for wall in self.walls:
+            pygame.draw.rect(self.background, BLUE, (wall.x * self.cell_width, wall.y * self.cell_height, self.cell_width, self.cell_height), 0)
+         
+    def draw_coins(self):
+        for coin in self.coins:
+            pygame.draw.circle(self.screen, WHITE, (TOP_BOTTOM_SPACE // 2 + coin.x * self.cell_width + self.cell_width // 2, TOP_BOTTOM_SPACE // 2 + coin.y * self.cell_height + self.cell_height // 2), self.cell_width // 2 - 8, 0)
 
 ################################# START SCREEN #######################################
 
@@ -101,12 +108,14 @@ class App:
 
     def play_redraw(self):
         self.screen.fill(BLACK)
-        self.draw_text("CURRENT SCORE - 0", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [60, 0])
+        self.draw_text(f"CURRENT SCORE - {self.player.score}", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [60, 0])
         self.draw_text("HIGH SCORE - 0", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [SCREEN_WIDTH//2 + 50, 0])
         self.screen.blit(self.background, (TOP_BOTTOM_SPACE//2, TOP_BOTTOM_SPACE//2))
+        self.draw_coins()
         self.draw_grid()
         self.player.draw()
-        pygame.display.update()
+        pygame.display.flip()
+    
 
     
 
