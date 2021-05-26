@@ -2,7 +2,9 @@ import sys
 import pygame
 from settings import *
 from player import Player
+from enemy import Enemy
 from pygame.math import Vector2
+import sqlite3
 
 pygame.init()
 
@@ -19,7 +21,11 @@ class App:
         self.cells = []
         self.walls = []
         self.coins = []
+        self.enemies = []
+        self.enemies_pos = []
+        self.high_score = self.get_high_score()
         self.load()
+        self.make_enemies()
         
     def run(self):
         while self.running == True:
@@ -30,6 +36,9 @@ class App:
             elif self.state == 'play':
                 self.play_events()
                 self.play_redraw()
+            elif self.state == 'game-over':
+                self.game_over_events()
+                self.game_over_redraw()
         pygame.quit()
         sys.exit()
 
@@ -50,12 +59,21 @@ class App:
             for line in lines:
                 self.cells.append(line[:-1])
 
-        for row in range(31):
-            for col in range(28):
+        for row in range(ROWS):
+            for col in range(COLS):
                 if self.cells[row][col] == '1':
                     self.walls.append(Vector2(col, row))
                 elif self.cells[row][col] == 'C':
                     self.coins.append(Vector2(col, row))
+                elif self.cells[row][col] in ['2', '3', '4', '5']:
+                    self.enemies_pos.append(Vector2(col, row))
+                elif self.cells[row][col] == 'B':
+                    pygame.draw.rect(self.background, BLACK, (col * self.cell_width, row * self.cell_height, self.cell_width, self.cell_height), 0)
+    
+    def make_enemies(self):
+        for idx, pos in enumerate(self.enemies_pos):
+            new_enemy = Enemy(self, pos, idx)
+            self.enemies.append(new_enemy)
 
     def draw_grid(self):
         for x in range(SCREEN_WIDTH // self.cell_width):
@@ -70,6 +88,11 @@ class App:
     def draw_coins(self):
         for coin in self.coins:
             pygame.draw.circle(self.screen, WHITE, (TOP_BOTTOM_SPACE // 2 + coin.x * self.cell_width + self.cell_width // 2, TOP_BOTTOM_SPACE // 2 + coin.y * self.cell_height + self.cell_height // 2), self.cell_width // 2 - 8, 0)
+    
+    def get_high_score(self):
+        with open('high_score.txt', 'rt') as file:
+            high_score = int(file.readline().split(" ")[2])
+        return high_score
 
 ################################# START SCREEN #######################################
 
@@ -84,10 +107,11 @@ class App:
 
     def start_redraw(self):
         self.screen.fill(BLACK)
-        self.draw_text("HIGH SCORE - 0", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [5, 0])
+        self.draw_text(f"HIGH SCORE - {self.high_score}", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [5, 0])
         self.draw_text("PUSH SPACE BAR", self.screen, DEFAULT_FONT, DEFAULT_SIZE, ORANGE, [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 3 + 50], centered=True)
         self.draw_text("1 PLAYER ONLY", self.screen, DEFAULT_FONT, DEFAULT_SIZE, BLUE, [SCREEN_WIDTH // 2, 2 * SCREEN_HEIGHT // 3 - 50], centered=True)
         pygame.display.update()
+
 
 ################################# PLAY SCREEN #######################################
 
@@ -96,25 +120,55 @@ class App:
             if event.type == pygame.QUIT:
                 self.running = False
 
-        keys_pressed = pygame.key.get_pressed()
-        if keys_pressed[pygame.K_UP] == True:
-            self.player.move(Vector2(0, -1))
-        if keys_pressed[pygame.K_DOWN] == True:
-            self.player.move(Vector2(0, 1))
-        if keys_pressed[pygame.K_LEFT] == True:
-            self.player.move(Vector2(-1, 0))
-        if keys_pressed[pygame.K_RIGHT] == True:
-            self.player.move(Vector2(1, 0))
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    self.player.move(Vector2(0, -1))
+                if event.key == pygame.K_DOWN:
+                    self.player.move(Vector2(0, 1))
+                if event.key == pygame.K_LEFT:
+                    self.player.move(Vector2(-1, 0))
+                if event.key == pygame.K_RIGHT:
+                    self.player.move(Vector2(1, 0))
+
+        # keys_pressed = pygame.key.get_pressed()
+        # if keys_pressed[pygame.K_UP] == True:
+        #     self.player.move(Vector2(0, -1))
+        # if keys_pressed[pygame.K_DOWN] == True:
+        #     self.player.move(Vector2(0, 1))
+        # if keys_pressed[pygame.K_LEFT] == True:
+        #     self.player.move(Vector2(-1, 0))
+        # if keys_pressed[pygame.K_RIGHT] == True:
+        #     self.player.move(Vector2(1, 0))
 
     def play_redraw(self):
         self.screen.fill(BLACK)
         self.draw_text(f"CURRENT SCORE - {self.player.score}", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [60, 0])
-        self.draw_text("HIGH SCORE - 0", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [SCREEN_WIDTH//2 + 50, 0])
-        self.screen.blit(self.background, (TOP_BOTTOM_SPACE//2, TOP_BOTTOM_SPACE//2))
+        self.draw_text(f"HIGH SCORE - {self.high_score}", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [SCREEN_WIDTH//2 + 50, 0])
+        self.screen.blit(self.background, (TOP_BOTTOM_SPACE // 2, TOP_BOTTOM_SPACE//2))
         self.draw_coins()
-        self.draw_grid()
+        # self.draw_grid()
         self.player.draw()
-        pygame.display.flip()
+        for enemy in self.enemies:
+            enemy.draw()
+        pygame.display.update()
+
+
+################################# GAME OVER SCREEN #######################################
+
+    # GAME OVER
+    # Press SPACE bar to PLAY AGAIN
+    # Press the escape button to QUIT
+
+    def game_over_events(self):
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.running = False
+
+    def game_over_redraw(self):
+        self.screen.fill(BLACK)
+        self.draw_text("GAME OVER", self.screen, DEFAULT_FONT, 50, 
+        RED, [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2], centered=True)
+        pygame.display.update()
     
 
     
