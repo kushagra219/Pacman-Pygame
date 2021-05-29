@@ -94,6 +94,25 @@ class App:
             high_score = int(file.readline().split(" ")[2])
         return high_score
 
+    def reset(self):
+        self.player.score = 0
+        self.player.lives = 1
+        self.player.grid_pos = Vector2(13, 29)
+        self.player.pix_pos = self.player.get_pix_pos()
+        self.player.direction = Vector2(0, 0)
+
+        # here the enemies are not resetting
+        self.enemies = []
+        print(len(self.enemies))
+        self.make_enemies()
+
+        self.coins = []
+        for row in range(ROWS):
+            for col in range(COLS):
+                if self.cells[row][col] == 'C':
+                    self.coins.append(Vector2(col, row))
+
+
 ################################# START SCREEN #######################################
 
     def start_events(self):
@@ -146,7 +165,7 @@ class App:
         self.draw_text(f"HIGH SCORE - {self.high_score}", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [SCREEN_WIDTH//2 + 50, 0])
         self.screen.blit(self.background, (TOP_BOTTOM_SPACE // 2, TOP_BOTTOM_SPACE//2))
         self.draw_coins()
-        # self.draw_grid()
+        self.draw_grid()
         self.player.draw()
         for enemy in self.enemies:
             enemy.draw()
@@ -164,11 +183,23 @@ class App:
             if event.type == pygame.QUIT:
                 self.running = False
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    self.running = False
+                if event.key == pygame.K_SPACE:
+                    self.reset()
+                    self.state = 'play'
+
     def game_over_redraw(self):
         self.screen.fill(BLACK)
         self.draw_text("GAME OVER", self.screen, DEFAULT_FONT, 50, 
-        RED, [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2], centered=True)
+        RED, [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 4], centered=True)
+        self.draw_text("Press SPACE bar to PLAY AGAIN", self.screen, DEFAULT_FONT, 25, 
+        GRAY_LIGHT, [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2], centered=True)
+        self.draw_text("Press the escape button to QUIT", self.screen, DEFAULT_FONT, 25, 
+        GRAY_LIGHT, [SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50], centered=True)
         pygame.display.update()
+
     
 
     

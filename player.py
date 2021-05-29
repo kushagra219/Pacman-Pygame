@@ -9,7 +9,7 @@ class Player(object):
         self.pix_pos = self.get_pix_pos()
         self.score = 0
         self.direction = Vector2(0, 0)
-        self.lives = 3
+        self.lives = 1
 
     def get_pix_pos(self):
         x = TOP_BOTTOM_SPACE // 2 + self.grid_pos.x * self.app.cell_width + self.app.cell_width // 2
@@ -30,6 +30,11 @@ class Player(object):
         self.eat_coin()
 
         pygame.draw.circle(self.app.screen, YELLOW, self.pix_pos, self.app.cell_width // 2 - 2, 0)
+
+        # Drawing Player Lives
+        self.app.draw_text("Lives - ", self.app.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [25, SCREEN_HEIGHT - 28])
+        for x in range(self.lives):
+            pygame.draw.circle(self.app.screen, YELLOW, (105 + 20 * x, SCREEN_HEIGHT - 15), 7)
 
     def move(self, direction):
         self.direction = direction
