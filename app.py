@@ -1,4 +1,5 @@
 import sys
+import copy
 import pygame
 from settings import *
 from player import Player
@@ -72,7 +73,7 @@ class App:
     
     def make_enemies(self):
         for idx, pos in enumerate(self.enemies_pos):
-            new_enemy = Enemy(self, pos, idx)
+            new_enemy = Enemy(self, copy.deepcopy(pos), idx)
             self.enemies.append(new_enemy)
 
     def draw_grid(self):
@@ -94,6 +95,10 @@ class App:
             high_score = int(file.readline().split(" ")[2])
         return high_score
 
+    def reset_enemies(self):
+        self.enemies = []
+        self.make_enemies()
+
     def reset(self):
         self.player.score = 0
         self.player.lives = 1
@@ -101,10 +106,7 @@ class App:
         self.player.pix_pos = self.player.get_pix_pos()
         self.player.direction = Vector2(0, 0)
 
-        # here the enemies are not resetting
-        self.enemies = []
-        print(len(self.enemies))
-        self.make_enemies()
+        self.reset_enemies()
 
         self.coins = []
         for row in range(ROWS):
@@ -165,7 +167,7 @@ class App:
         self.draw_text(f"HIGH SCORE - {self.high_score}", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [SCREEN_WIDTH//2 + 50, 0])
         self.screen.blit(self.background, (TOP_BOTTOM_SPACE // 2, TOP_BOTTOM_SPACE//2))
         self.draw_coins()
-        self.draw_grid()
+        # self.draw_grid()
         self.player.draw()
         for enemy in self.enemies:
             enemy.draw()
