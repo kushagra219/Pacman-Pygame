@@ -27,6 +27,7 @@ class App:
         self.high_score = self.get_high_score()
         self.load()
         self.make_enemies()
+        self.play_start_music()
         
     def run(self):
         while self.running == True:
@@ -101,10 +102,11 @@ class App:
 
     def reset(self):
         self.player.score = 0
-        self.player.lives = 1
+        self.player.lives = 3
         self.player.grid_pos = Vector2(13, 29)
         self.player.pix_pos = self.player.get_pix_pos()
-        self.player.direction = Vector2(0, 0)
+        self.player.current_direction = Vector2(0, 0)
+        self.player.stored_direction = Vector2(0, 0)
 
         self.reset_enemies()
 
@@ -113,7 +115,16 @@ class App:
             for col in range(COLS):
                 if self.cells[row][col] == 'C':
                     self.coins.append(Vector2(col, row))
+        
+        self.play_play_music()
 
+    def play_start_music(self):
+        pygame.mixer.music.load('assets/pacman_beginning.wav')
+        pygame.mixer.music.play(-1)
+
+    def play_play_music(self):
+        pygame.mixer.music.load('assets/Pac_Man_Ghost_Noises.mp3')
+        pygame.mixer.music.play(-1)
 
 ################################# START SCREEN #######################################
 
@@ -125,6 +136,7 @@ class App:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     self.state = 'play'
+                    self.play_play_music()
 
     def start_redraw(self):
         self.screen.fill(BLACK)
