@@ -52,6 +52,7 @@ class Enemy(object):
         elif self.personality == 'scared':
             if self.first_run == True:
                 self.grid_pos = Vector2(13, 23)
+                self.pix_pos = self.get_pix_pos()
                 self.first_run = False
             self.direction = self.get_scared_direction()
 
