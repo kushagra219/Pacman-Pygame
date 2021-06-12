@@ -22,12 +22,14 @@ class App:
         self.cells = []
         self.walls = []
         self.coins = []
+        self.pellets = []
         self.enemies = []
         self.enemies_pos = []
         self.high_score = self.get_high_score()
         self.load()
         self.make_enemies()
         self.play_start_music()
+        self.intermission = False
         
     def run(self):
         while self.running == True:
@@ -71,6 +73,8 @@ class App:
                     self.enemies_pos.append(Vector2(col, row))
                 elif self.cells[row][col] == 'B':
                     pygame.draw.rect(self.background, BLACK, (col * self.cell_width, row * self.cell_height, self.cell_width, self.cell_height), 0)
+                elif self.cells[row][col] == 'I':
+                    self.pellets.append(Vector2(col, row))
     
     def make_enemies(self):
         for idx, pos in enumerate(self.enemies_pos):
@@ -90,6 +94,10 @@ class App:
     def draw_coins(self):
         for coin in self.coins:
             pygame.draw.circle(self.screen, WHITE, (TOP_BOTTOM_SPACE // 2 + coin.x * self.cell_width + self.cell_width // 2, TOP_BOTTOM_SPACE // 2 + coin.y * self.cell_height + self.cell_height // 2), self.cell_width // 2 - 8, 0)
+
+    def draw_pellets(self):
+        for pellet in self.pellets:
+            pygame.draw.circle(self.screen, WHITE, (TOP_BOTTOM_SPACE // 2 + pellet.x * self.cell_width + self.cell_width // 2, TOP_BOTTOM_SPACE // 2 + pellet.y * self.cell_height + self.cell_height // 2), self.cell_width // 2 - 2, 0)
     
     def get_high_score(self):
         with open('high_score.txt', 'rt') as file:
@@ -120,11 +128,13 @@ class App:
 
     def play_start_music(self):
         pygame.mixer.music.load('assets/pacman_beginning.wav')
-        pygame.mixer.music.play(-1)
+        # pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.5)
 
     def play_play_music(self):
         pygame.mixer.music.load('assets/Pac_Man_Ghost_Noises.mp3')
-        pygame.mixer.music.play(-1)
+        # pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.5)
 
 ################################# START SCREEN #######################################
 
@@ -179,6 +189,7 @@ class App:
         self.draw_text(f"HIGH SCORE - {self.high_score}", self.screen, DEFAULT_FONT, DEFAULT_SIZE, WHITE, [SCREEN_WIDTH//2 + 50, 0])
         self.screen.blit(self.background, (TOP_BOTTOM_SPACE // 2, TOP_BOTTOM_SPACE//2))
         self.draw_coins()
+        self.draw_pellets()
         # self.draw_grid()
         self.player.draw()
         for enemy in self.enemies:

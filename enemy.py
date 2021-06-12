@@ -3,6 +3,7 @@ pygame.mixer.init()
 from settings import *
 from pygame.math import Vector2
 import random
+import copy
 
 blue_ghost_img = pygame.image.load('assets/pacman-blue-ghost.jpg')
 pink_ghost_img = pygame.image.load('assets/pacman-pink-ghost.jpg')
@@ -57,8 +58,11 @@ class Enemy(object):
             self.direction = self.get_scared_direction()
 
         else:
-            next_cell = self.get_next_cell()
-            self.direction = next_cell - self.grid_pos
+            if self.app.intermission == False:
+                next_cell = self.get_next_cell()
+                self.direction = next_cell - self.grid_pos
+            else:
+                self.direction = self.get_scared_direction()
 
         if self.able_to_move() == True:
             self.pix_pos += self.direction * self.speed
@@ -69,22 +73,31 @@ class Enemy(object):
 
     def check_collision(self):
         if self.grid_pos == self.app.player.grid_pos:
-            collision_sound.play()
-            self.app.player.lives -= 1
-            
-            print("Lives left: ", self.app.player.lives)
-            if self.app.player.lives == 0:
-                self.app.state = 'game-over'
-                self.app.play_start_music()
-                return
+            # collision_sound.play()
+            if self.app.intermission == False:
+                self.app.player.lives -= 1
+                
+                print("Lives left: ", self.app.player.lives)
+                if self.app.player.lives == 0:
+                    self.app.state = 'game-over'
+                    self.app.play_start_music()
+                    return
 
-            self.app.player.grid_pos = Vector2(13, 29)
-            self.app.player.pix_pos = self.app.player.get_pix_pos()
-            self.app.player.current_direction = Vector2(0, 0)
-            self.app.reset_enemies()
-            self.app.player.draw()
-            pygame.display.update()
-            pygame.time.delay(250)
+                self.app.player.grid_pos = Vector2(13, 29)
+                self.app.player.pix_pos = self.app.player.get_pix_pos()
+                self.app.player.current_direction = Vector2(0, 0)
+                self.app.reset_enemies()
+                self.app.player.draw()
+                pygame.display.update()
+                pygame.time.delay(250)
+            else:
+                self.app.player.score += 100
+                self.app.draw_text("100", self.app.screen, DEFAULT_FONT, 10, WHITE, self.pix_pos - Vector2(10, 10))
+                self.grid_pos = copy.deepcopy(self.app.enemies_pos[self.index])
+                self.pix_pos = self.get_pix_pos()
+                pygame.display.update()
+                pygame.time.delay(500)
+
 
     def get_random_direction(self):
         return random.choice([UP, DOWN, LEFT, RIGHT])

@@ -1,12 +1,18 @@
 import pygame
+import time
 pygame.mixer.init()
 from settings import *
 from pygame.math import Vector2
 
 player_img = pygame.image.load('assets/pacman-player.png')
 player_shrink_img = pygame.transform.scale(player_img, (18, 18))
-
 chomp_sound = pygame.mixer.Sound('assets/pacman_chomp.wav')
+enemy_intermission_img = pygame.transform.scale(pygame.image.load('assets/enemy_intermission.jpg'), (18, 18))
+
+blue_ghost_img = pygame.image.load('assets/pacman-blue-ghost.jpg')
+pink_ghost_img = pygame.image.load('assets/pacman-pink-ghost.jpg')
+orange_ghost_img = pygame.image.load('assets/pacman-orange-ghost.jpg')
+red_ghost_img = pygame.image.load('assets/pacman-red-ghost.jpg')
 
 class Player(object):
     def __init__(self, app, start_pos):
@@ -19,6 +25,7 @@ class Player(object):
         self.stored_direction = Vector2(0, 0)
         self.lives = 3
         self.speed = 20
+        self.intermission_start_time = None
 
     # finding pix_pos from grid_pos
     def get_pix_pos(self):
@@ -42,7 +49,15 @@ class Player(object):
             self.pix_pos += self.current_direction * self.speed
             self.grid_pos = self.get_grid_pos()
         self.rotate()
+
         self.eat_coin()
+        self.eat_pellet()
+        if self.app.intermission == True:
+            if (time.time() - self.intermission_start_time) >= 10:
+                print("end intermission")
+                self.intermission_start_time = None
+                self.app.intermission = False
+                self.change_enemies_back()
 
         self.app.screen.blit(self.image, 
         (TOP_BOTTOM_SPACE // 2 + self.grid_pos.x * self.app.cell_width, 
@@ -97,7 +112,7 @@ class Player(object):
 
     def eat_coin(self):
         if Vector2(self.grid_pos) in self.app.coins:
-            chomp_sound.play(maxtime=50)
+            # chomp_sound.play(maxtime=50)
             self.app.coins.remove(Vector2(self.grid_pos))
             self.score += 1
             if self.score > self.app.high_score:
@@ -105,8 +120,38 @@ class Player(object):
                 with open('high_score.txt', 'w') as file:
                     file.write(f"HIGHSCORE = {self.app.high_score}")
 
+    def eat_pellet(self):
+        if Vector2(self.grid_pos) in self.app.pellets:
+            # chomp_sound.play(maxtime=50)
+            self.app.pellets.remove(Vector2(self.grid_pos))
+            self.app.intermission = True
+            print("start intermission")
+            self.change_enemies()
+            self.intermission_start_time = time.time()
+
+
+    def change_enemies(self):
+        for enemy in self.app.enemies:
+            enemy.image = enemy_intermission_img
+
+    def change_enemies_back(self):
+        for enemy in self.app.enemies:
+            if enemy.index == 0:
+                enemy.image = blue_ghost_img
+            if enemy.index == 1:
+                enemy.image = pink_ghost_img
+            if enemy.index == 2:
+                enemy.image = orange_ghost_img
+            if enemy.index == 3:
+                enemy.image = red_ghost_img
+            enemy.image = pygame.transform.scale(enemy.image, (18, 18))
+
     # player will keep on moving 
     # we will press the keys to only change direction 
+
+    # switch on the intermission once the pellet is eaten, and keep it on for fixed seconds
+    # if collision, we need increase the player points and reset
+    # after time, we will intermission = False
 
     
 
