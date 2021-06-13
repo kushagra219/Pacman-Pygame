@@ -1,5 +1,5 @@
 # Pacman-Pygame
-Made with ❤️ using Pygame 2.x and converted to exe using Pyinstaller. Download .exe file from [here](https://github.com/kushagra219/Pacman-Pygame/blob/main/pacman.exe?raw=true).
+Made with ❤️ using Pygame 2.x and converted to exe using Pyinstaller. Download .exe file from [here](https://github.com/kushagra219/Pacman-Pygame/blob/main/pacman.exe?raw=true). Please note, it might take some time for file to load after downloading. 
 
 ## Features 
 * Implemented normal grid movement for player & enemies
