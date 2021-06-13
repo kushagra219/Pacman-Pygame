@@ -7,6 +7,7 @@ from pygame.math import Vector2
 player_img = pygame.image.load('assets/pacman-player.png')
 player_shrink_img = pygame.transform.scale(player_img, (18, 18))
 chomp_sound = pygame.mixer.Sound('assets/pacman_chomp.wav')
+chomp_sound.set_volume(0.5)
 enemy_intermission_img = pygame.transform.scale(pygame.image.load('assets/enemy_intermission.jpg'), (18, 18))
 
 blue_ghost_img = pygame.image.load('assets/pacman-blue-ghost.jpg')
@@ -57,7 +58,8 @@ class Player(object):
                 print("end intermission")
                 self.intermission_start_time = None
                 self.app.intermission = False
-                self.change_enemies_back()
+                self.change_enemy_images_back()
+                self.app.play_play_music()
 
         self.app.screen.blit(self.image, 
         (TOP_BOTTOM_SPACE // 2 + self.grid_pos.x * self.app.cell_width, 
@@ -112,7 +114,7 @@ class Player(object):
 
     def eat_coin(self):
         if Vector2(self.grid_pos) in self.app.coins:
-            # chomp_sound.play(maxtime=50)
+            chomp_sound.play(maxtime=50)
             self.app.coins.remove(Vector2(self.grid_pos))
             self.score += 1
             if self.score > self.app.high_score:
@@ -122,19 +124,19 @@ class Player(object):
 
     def eat_pellet(self):
         if Vector2(self.grid_pos) in self.app.pellets:
-            # chomp_sound.play(maxtime=50)
+            chomp_sound.play(maxtime=50)
             self.app.pellets.remove(Vector2(self.grid_pos))
             self.app.intermission = True
             print("start intermission")
-            self.change_enemies()
+            self.change_enemy_images()
+            self.app.play_intermission_music()
             self.intermission_start_time = time.time()
 
-
-    def change_enemies(self):
+    def change_enemy_images(self):
         for enemy in self.app.enemies:
             enemy.image = enemy_intermission_img
 
-    def change_enemies_back(self):
+    def change_enemy_images_back(self):
         for enemy in self.app.enemies:
             if enemy.index == 0:
                 enemy.image = blue_ghost_img

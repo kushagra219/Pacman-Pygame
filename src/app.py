@@ -13,6 +13,7 @@ class App:
 
     def __init__(self):
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        pygame.display.set_caption("Pacman")
         self.clock = pygame.time.Clock()
         self.running = True
         self.state = 'start'
@@ -128,13 +129,18 @@ class App:
 
     def play_start_music(self):
         pygame.mixer.music.load('assets/pacman_beginning.wav')
-        # pygame.mixer.music.play(-1)
-        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.3)
 
     def play_play_music(self):
         pygame.mixer.music.load('assets/Pac_Man_Ghost_Noises.mp3')
-        # pygame.mixer.music.play(-1)
-        pygame.mixer.music.set_volume(0.5)
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.3)
+
+    def play_intermission_music(self):
+        pygame.mixer.music.load('assets/pacman_intermission.wav')
+        pygame.mixer.music.play(-1)
+        pygame.mixer.music.set_volume(0.3)
 
 ################################# START SCREEN #######################################
 

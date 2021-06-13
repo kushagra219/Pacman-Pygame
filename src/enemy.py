@@ -11,6 +11,7 @@ orange_ghost_img = pygame.image.load('assets/pacman-orange-ghost.jpg')
 red_ghost_img = pygame.image.load('assets/pacman-red-ghost.jpg')
 
 collision_sound = pygame.mixer.Sound('assets/pacman_death.wav')
+collision_sound.set_volume(0.5)
 
 class Enemy(object):
     def __init__(self, app, pos, idx):
@@ -73,7 +74,7 @@ class Enemy(object):
 
     def check_collision(self):
         if self.grid_pos == self.app.player.grid_pos:
-            # collision_sound.play()
+            collision_sound.play()
             if self.app.intermission == False:
                 self.app.player.lives -= 1
                 
