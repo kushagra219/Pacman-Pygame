@@ -31,6 +31,7 @@ class App:
         self.make_enemies()
         self.play_start_music()
         self.intermission = False
+        self.pellet_blink_counter = 0
         
     def run(self):
         while self.running == True:
@@ -97,8 +98,10 @@ class App:
             pygame.draw.circle(self.screen, WHITE, (TOP_BOTTOM_SPACE // 2 + coin.x * self.cell_width + self.cell_width // 2, TOP_BOTTOM_SPACE // 2 + coin.y * self.cell_height + self.cell_height // 2), self.cell_width // 2 - 8, 0)
 
     def draw_pellets(self):
-        for pellet in self.pellets:
-            pygame.draw.circle(self.screen, WHITE, (TOP_BOTTOM_SPACE // 2 + pellet.x * self.cell_width + self.cell_width // 2, TOP_BOTTOM_SPACE // 2 + pellet.y * self.cell_height + self.cell_height // 2), self.cell_width // 2 - 2, 0)
+        self.pellet_blink_counter += 1
+        if self.pellet_blink_counter % 2 == 0:
+            for pellet in self.pellets:
+                pygame.draw.circle(self.screen, WHITE, (TOP_BOTTOM_SPACE // 2 + pellet.x * self.cell_width + self.cell_width // 2, TOP_BOTTOM_SPACE // 2 + pellet.y * self.cell_height + self.cell_height // 2), self.cell_width // 2 - 2, 0)
     
     def get_high_score(self):
         with open(resource_path('high_score.txt'), 'rt') as file:
